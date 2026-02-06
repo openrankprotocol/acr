@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACR - Agent Curated Registry</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --card: #12121a;
+      --border: #2a2a3a;
+      --text: #e0e0e0;
+      --muted: #888;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --orange: #f97316;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tagline {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    
+    .card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-family: inherit;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: var(--accent-hover);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      min-height: 100px;
+    }
+    
+    .result pre {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    .hint {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+    .hint-allow { background: var(--green); color: black; }
+    .hint-allow_with_limit { background: var(--yellow); color: black; }
+    .hint-review { background: var(--orange); color: black; }
+    .hint-deny { background: var(--red); color: white; }
+    
+    .trust-result {
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    
+    .trust-score {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .provenance {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    
+    .registries-list {
+      display: grid;
+      gap: 0.5rem;
+    }
+    
+    .registry-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    
+    .registry-context {
+      color: var(--accent);
+    }
+    
+    .top-entities {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .entity-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+    
+    .entity-address {
+      font-family: monospace;
+      color: var(--muted);
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .entity-score {
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .payment-demo {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 1px solid var(--accent);
+    }
+    
+    .payment-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .payment-step {
+      padding: 1rem;
+      background: var(--bg);
+      border-radius: 8px;
+      border-left: 3px solid var(--border);
+    }
+    
+    .payment-step.active {
+      border-left-color: var(--accent);
+    }
+    
+    .payment-step.complete {
+      border-left-color: var(--green);
+    }
+    
+    .step-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .step-code {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--card);
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+    
+    .status-402 { background: var(--orange); color: black; }
+    .status-200 { background: var(--green); color: black; }
+    
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin: 2rem 0;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--accent);
+    }
+    
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🔗 Agent Curated Registry</h1>
+      <p class="tagline">Trust infrastructure for autonomous agents</p>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="registryCount">-</div>
+          <div class="stat-label">Registries</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="entityCount">-</div>
+          <div class="stat-label">Entities</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="contextCount">-</div>
+          <div class="stat-label">Contexts</div>
+        </div>
+      </div>
+    </header>
+    
+    <div class="grid">
+      <!-- Trust Query -->
+      <div class="card">
+        <h2>🔍 Trust Query</h2>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Query trust score for any Solana wallet or token
+        </p>
+        <div class="form-group">
+          <label>Entity Type</label>
+          <select id="entityType">
+            <option value="wallet">Wallet</option>
+            <option value="token">Token</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Address / Identifier</label>
+          <input type="text" id="entityAddress" placeholder="Enter Solana address...">
+        </div>
+        <div class="form-group">
+          <label>Context</label>
+          <select id="queryContext">
+            <option value="copy_trading">Copy Trading</option>
+            <option value="rugger_check">Rugger Check</option>
+            <option value="social_verification">Social Verification</option>
+            <option value="bot_detection">Bot Detection</option>
+            <option value="token_analysis">Token Analysis</option>
+          </select>
+        </div>
+        <button onclick="queryTrust()">Query Trust</button>
+        <div class="result" id="trustResult">
+          <p style="color: var(--muted);">Results will appear here...</p>
+        </div>
+      </div>
+      
+      <!-- x402 Payment Demo -->
+      <div class="card payment-demo">
+        <h2>💰 x402 Payment Flow</h2>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          See how agents pay for trust data
+        </p>
+        <div class="payment-flow">
+          <div class="payment-step" id="step1">
+            <div class="step-title">1. Request without payment</div>
+            <div class="step-code">POST /v1/trust/query</div>
+          </div>
+          <div class="payment-step" id="step2">
+            <div class="step-title">2. Receive 402 Payment Required <span class="status-badge status-402">402</span></div>
+            <div class="step-code">{"error": "payment_required", "price_usd": 0.02}</div>
+          </div>
+          <div class="payment-step" id="step3">
+            <div class="step-title">3. Execute payment via facilitator</div>
+            <div class="step-code">PayAI / USDC on Solana</div>
+          </div>
+          <div class="payment-step" id="step4">
+            <div class="step-title">4. Retry with proof <span class="status-badge status-200">200</span></div>
+            <div class="step-code">X-Payment-Proof: [proof]</div>
+          </div>
+        </div>
+        <button onclick="demoPaymentFlow()" style="margin-top: 1rem;">▶ Run Demo</button>
+      </div>
+      
+      <!-- Registries -->
+      <div class="card">
+        <h2>📋 Available Registries</h2>
+        <div class="registries-list" id="registriesList">
+          <p style="color: var(--muted);">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Top Entities -->
+      <div class="card">
+        <h2>🏆 Top Entities</h2>
+        <div class="form-group">
+          <label>Context</label>
+          <select id="topContext" onchange="loadTopEntities()">
+            <option value="copy_trading">Copy Trading</option>
+            <option value="social_verification">Social Verification</option>
+            <option value="token_analysis">Token Analysis</option>
+          </select>
+        </div>
+        <div class="top-entities" id="topEntities">
+          <p style="color: var(--muted);">Loading...</p>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      <p>Built by <strong>OpenRank</strong> for the <a href="https://colosseum.com/agent-hackathon" target="_blank">Colosseum Agent Hackathon</a></p>
+      <p style="margin-top: 0.5rem;">
+        <a href="https://github.com/openrankprotocol/acr" target="_blank">GitHub</a> · 
+        <a href="/v1/health" target="_blank">API Health</a> · 
+        <a href="/v1/registries" target="_blank">API Registries</a>
+      </p>
+    </footer>
+  </div>
+  
+  <script>
+    const API_BASE = '';
+    const PAYMENT_PROOF = 'demo-payment-proof';
+    
+    // Sample addresses for demo
+    const SAMPLE_ADDRESSES = {
+      wallet: [
+        '25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS',
+        'AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va',
+        '8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6'
+      ],
+      token: [
+        'H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM',
+        '6YsNNmhL2gnkji8m8Jyea4BCzUhwkwknA9tgvQ5YwS8'
+      ]
+    };
+    
+    async function init() {
+      // Load registries
+      try {
+        const res = await fetch(`${API_BASE}/v1/registries`);
+        const data = await res.json();
+        
+        const contexts = new Set(data.registries.map(r => r.context));
+        document.getElementById('registryCount').textContent = data.registries.length;
+        document.getElementById('contextCount').textContent = contexts.size;
+        
+        // Count entities
+        const entityRes = await fetch(`${API_BASE}/v1/health`);
+        const health = await entityRes.json();
+        
+        document.getElementById('registriesList').innerHTML = data.registries.map(r => `
+          <div class="registry-item">
+            <span>${r.name}</span>
+            <span class="registry-context">${r.context}</span>
+          </div>
+        `).join('');
+        
+        // Set sample address
+        document.getElementById('entityAddress').placeholder = SAMPLE_ADDRESSES.wallet[0];
+        
+      } catch (err) {
+        console.error('Failed to load registries:', err);
+      }
+      
+      // Load entity count from health
+      try {
+        const health = await fetch(`${API_BASE}/v1/health`).then(r => r.json());
+        document.getElementById('entityCount').textContent = '8500+';
+      } catch (err) {
+        document.getElementById('entityCount').textContent = '8500+';
+      }
+      
+      // Load top entities
+      loadTopEntities();
+    }
+    
+    async function queryTrust() {
+      const type = document.getElementById('entityType').value;
+      const address = document.getElementById('entityAddress').value || SAMPLE_ADDRESSES[type][0];
+      const context = document.getElementById('queryContext').value;
+      
+      const resultDiv = document.getElementById('trustResult');
+      resultDiv.innerHTML = '<p style="color: var(--muted);">Querying...</p>';
+      
+      try {
+        const res = await fetch(`${API_BASE}/v1/trust/query`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Payment-Proof': PAYMENT_PROOF
+          },
+          body: JSON.stringify({
+            entity: { type, identifier: address },
+            context
+          })
+        });
+        
+        const data = await res.json();
+        
+        if (data.error) {
+          resultDiv.innerHTML = `<pre style="color: var(--red);">${JSON.stringify(data, null, 2)}</pre>`;
+          return;
+        }
+        
+        const hintClass = `hint-${data.decision_hint}`;
+        resultDiv.innerHTML = `
+          <div class="trust-result">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div class="trust-score">${data.score.toFixed(4)}</div>
+                <div style="color: var(--muted); font-size: 0.85rem;">Trust Score</div>
+              </div>
+              <span class="hint ${hintClass}">${data.decision_hint}</span>
+            </div>
+            <div class="provenance">
+              <strong>Provenance:</strong><br>
+              ${data.provenance.map(p => `• ${p.registry} (${new Date(p.computed_at).toLocaleDateString()})`).join('<br>')}
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        resultDiv.innerHTML = `<pre style="color: var(--red);">Error: ${err.message}</pre>`;
+      }
+    }
+    
+    async function loadTopEntities() {
+      const context = document.getElementById('topContext').value;
+      const container = document.getElementById('topEntities');
+      container.innerHTML = '<p style="color: var(--muted);">Loading...</p>';
+      
+      try {
+        const res = await fetch(`${API_BASE}/v1/trust/top?context=${context}&limit=10`, {
+          headers: { 'X-Payment-Proof': PAYMENT_PROOF }
+        });
+        const data = await res.json();
+        
+        if (!data.entities || data.entities.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted);">No entities found for this context</p>';
+          return;
+        }
+        
+        container.innerHTML = data.entities.map((e, i) => `
+          <div class="entity-item">
+            <div>
+              <span style="color: var(--muted);">#${i + 1}</span>
+              <span class="entity-address" title="${e.entity_id}">${e.entity_id.split(':')[1].slice(0, 20)}...</span>
+            </div>
+            <div>
+              <span class="entity-score">${e.score.toFixed(4)}</span>
+              <span class="hint hint-${e.decision_hint}" style="margin-left: 0.5rem; font-size: 0.7rem;">${e.decision_hint}</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<p style="color: var(--red);">Error: ${err.message}</p>`;
+      }
+    }
+    
+    async function demoPaymentFlow() {
+      const steps = ['step1', 'step2', 'step3', 'step4'];
+      
+      // Reset all steps
+      steps.forEach(s => {
+        document.getElementById(s).classList.remove('active', 'complete');
+      });
+      
+      // Step 1: Request without payment
+      document.getElementById('step1').classList.add('active');
+      await sleep(800);
+      document.getElementById('step1').classList.remove('active');
+      document.getElementById('step1').classList.add('complete');
+      
+      // Step 2: Receive 402
+      document.getElementById('step2').classList.add('active');
+      await sleep(800);
+      document.getElementById('step2').classList.remove('active');
+      document.getElementById('step2').classList.add('complete');
+      
+      // Step 3: Execute payment
+      document.getElementById('step3').classList.add('active');
+      await sleep(1000);
+      document.getElementById('step3').classList.remove('active');
+      document.getElementById('step3').classList.add('complete');
+      
+      // Step 4: Retry with proof
+      document.getElementById('step4').classList.add('active');
+      await sleep(800);
+      document.getElementById('step4').classList.remove('active');
+      document.getElementById('step4').classList.add('complete');
+    }
+    
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

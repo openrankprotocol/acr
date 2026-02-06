@@ -1,16 +1,32 @@
 import express from 'express';
 import helmet from 'helmet';
 import pinoHttp from 'pino-http';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import { config } from './config.js';
 import { logger } from './logger.js';
 import { connectDb, disconnectDb } from './db/client.js';
 import routes from './api/routes.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 const app = express();
 
-// Middleware
-app.use(helmet());
+// Middleware - relaxed CSP for demo frontend
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+    },
+  },
+}));
 app.use(express.json());
+
+// Serve static frontend
+app.use(express.static(join(__dirname, '../public')));
 app.use(pinoHttp({ 
   logger,
   autoLogging: true,
