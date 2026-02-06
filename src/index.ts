@@ -26,7 +26,9 @@ app.use(helmet({
 app.use(express.json());
 
 // Serve static frontend
-app.use(express.static(join(__dirname, '../public')));
+const publicPath = join(__dirname, '../public');
+console.log('Serving static files from:', publicPath);
+app.use(express.static(publicPath));
 app.use(pinoHttp({ 
   logger,
   autoLogging: true,
