@@ -1,0 +1,45 @@
+{
+  "name": "acr",
+  "version": "1.0.0",
+  "description": "Agent Curated Registry - Trust infrastructure for autonomous agents",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "ingest": "tsx scripts/ingest.ts",
+    "demo:agent": "tsx scripts/demo-agent.ts"
+  },
+  "keywords": [
+    "solana",
+    "trust",
+    "registry",
+    "x402",
+    "agents"
+  ],
+  "author": "OpenRank",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "5.22.0",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "uuid": "^11.0.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.1",
+    "@types/uuid": "^10.0.0",
+    "prisma": "5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

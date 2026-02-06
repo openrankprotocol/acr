@@ -1,0 +1,67 @@
+// ACR - Agent Curated Registry
+// Prisma schema for trust infrastructure
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Entity {
+  id          String   @id @default(uuid())
+  chain       String   @default("solana")
+  entityType  String   @map("entity_type") // wallet, token, dev, kol
+  address     String   // unique identifier (wallet address or token mint)
+  displayName String?  @map("display_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  registryEntries RegistryEntry[]
+
+  @@unique([chain, entityType, address])
+  @@map("entity")
+}
+
+model Registry {
+  id             String   @id @default(uuid())
+  slug           String   @unique
+  name           String
+  description    String?
+  context        String   // e.g., copy_trading, token_analysis, kyc
+  sourceFile     String   @map("source_file")
+  lastIngestedAt DateTime @map("last_ingested_at")
+
+  entries RegistryEntry[]
+
+  @@map("registry")
+}
+
+model RegistryEntry {
+  id             String   @id @default(uuid())
+  registryId     String   @map("registry_id")
+  entityId       String   @map("entity_id")
+  score          Float    // precomputed trust score from CSV
+  attributesJson String?  @map("attributes_json") // source-specific fields
+  computedAt     DateTime @default(now()) @map("computed_at")
+
+  registry Registry @relation(fields: [registryId], references: [id], onDelete: Cascade)
+  entity   Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@unique([registryId, entityId])
+  @@map("registry_entry")
+}
+
+model PaymentLog {
+  id          String   @id @default(uuid())
+  requestId   String   @map("request_id")
+  endpoint    String
+  priceUsd    Float    @map("price_usd")
+  status      String   // pending, completed, failed
+  paymentRef  String?  @map("payment_ref")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("payment_log")
+}
