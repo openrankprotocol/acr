@@ -24,6 +24,7 @@
   "author": "OpenRank",
   "license": "MIT",
   "dependencies": {
+    "@coinbase/x402": "^2.1.0",
     "@prisma/client": "5.22.0",
     "csv-parse": "^5.6.0",
     "dotenv": "^16.4.7",

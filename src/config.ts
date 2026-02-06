@@ -14,8 +14,8 @@ const configSchema = z.object({
   priceTrustTopUsd: z.coerce.number().default(0.05),
   
   // PayAI
-  payaiFacilitatorUrl: z.string().default('https://payai.network/v1/pay'),
-  payaiMerchantAddress: z.string().optional(),
+  payaiFacilitatorUrl: z.string().default('https://facilitator.payai.network'),
+  payaiMerchantAddress: z.string().default(''), // Solana address to receive payments
   
   // Logging
   logLevel: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
