@@ -16,6 +16,7 @@ const configSchema = z.object({
   // PayAI
   payaiFacilitatorUrl: z.string().default('https://facilitator.payai.network'),
   payaiMerchantAddress: z.string().default(''), // Solana address to receive payments
+  payaiNetwork: z.string().default('solana-devnet'), // solana | solana-devnet
   
   // Logging
   logLevel: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
@@ -30,6 +31,7 @@ export const config = configSchema.parse({
   priceTrustTopUsd: process.env.PRICE_TRUST_TOP_USD,
   payaiFacilitatorUrl: process.env.PAYAI_FACILITATOR_URL,
   payaiMerchantAddress: process.env.PAYAI_MERCHANT_ADDRESS,
+  payaiNetwork: process.env.PAYAI_NETWORK,
   logLevel: process.env.LOG_LEVEL,
 });
 

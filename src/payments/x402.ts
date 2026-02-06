@@ -221,7 +221,7 @@ export function x402Middleware(priceUsd: number) {
     });
 
     // Determine network based on config
-    const network = config.paymentsMode === 'live' ? 'solana' : 'solana-devnet';
+    const network = config.payaiNetwork || 'solana-devnet';
     const isDevnet = network.includes('devnet');
     
     const response: X402PaymentRequirements = {
