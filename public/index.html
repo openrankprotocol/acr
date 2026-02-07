@@ -499,8 +499,11 @@
         const data = await res.json();
         
         const contexts = new Set(data.registries.map(r => r.context));
+        const totalEntities = data.registries.reduce((sum, r) => sum + (r.entry_count || 0), 0);
+        
         document.getElementById('registryCount').textContent = data.registries.length;
         document.getElementById('contextCount').textContent = contexts.size;
+        document.getElementById('entityCount').textContent = totalEntities.toLocaleString();
         
         document.getElementById('registriesList').innerHTML = data.registries.map(r => `
           <div class="registry-item">
