@@ -241,6 +241,8 @@ export function x402Middleware(priceUsd: number) {
           extra: {
             name: 'USDC',
             priceUsd: priceUsd.toString(),
+            // For Solana, facilitator pays gas fees
+            feePayer: '2wKupLR9q6wXYppw8Gr2NvWxKBUqm4PPJKkQfoxHDBg4',
           },
         },
       ],

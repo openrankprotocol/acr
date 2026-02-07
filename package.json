@@ -12,7 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "ingest": "tsx scripts/ingest.ts",
-    "demo:agent": "tsx scripts/demo-agent.ts"
+    "demo:agent": "tsx scripts/demo-agent.ts",
+    "test:x402": "tsx scripts/test-x402-payments.ts",
+    "test:x402:check": "tsx scripts/test-x402-payments.ts --check"
   },
   "keywords": [
     "solana",
@@ -36,6 +38,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@solana/spl-token": "^0.4.14",
+    "@solana/web3.js": "^1.98.4",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.1",
     "@types/uuid": "^10.0.0",
