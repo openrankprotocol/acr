@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": "echo 'Static deploy'",
+  "outputDirectory": "public",
+  "installCommand": "echo 'Skip'",
+  "public": true
+}

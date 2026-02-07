@@ -429,7 +429,8 @@
   </div>
   
   <script>
-    const API_BASE = '';
+    // API base URL - empty for same-origin, or set to deployed backend URL
+    const API_BASE = window.ACR_API_URL || '';
     const PAYMENT_PROOF = 'demo-payment-proof';
     
     // Sample addresses for demo
