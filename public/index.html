@@ -432,6 +432,7 @@
     // API base URL - empty for same-origin, or set to deployed backend URL
     const API_BASE = window.ACR_API_URL || '';
     const PAYMENT_PROOF = 'demo-payment-proof';
+    let DEMO_MODE = false;
     
     // Sample addresses for demo
     const SAMPLE_ADDRESSES = {
@@ -446,19 +447,60 @@
       ]
     };
     
+    // Demo data for static deployment
+    const DEMO_DATA = {
+      registries: [
+        { id: 'copytrade-leaders', name: 'CopyTrade Leaders', context: 'copy_trading', entity_count: 1250 },
+        { id: 'copytrade-followers', name: 'CopyTrade Followers', context: 'copy_trading', entity_count: 890 },
+        { id: 'rugcheck-safe', name: 'RugCheck Safe Tokens', context: 'rugger_check', entity_count: 2100 },
+        { id: 'rugcheck-risky', name: 'RugCheck Risky', context: 'rugger_check', entity_count: 450 },
+        { id: 'twitter-verified', name: 'Twitter Verified', context: 'social_verification', entity_count: 1800 },
+        { id: 'dexscreener-trending', name: 'DexScreener Trending', context: 'token_analysis', entity_count: 320 },
+        { id: 'birdeye-top', name: 'Birdeye Top Tokens', context: 'token_analysis', entity_count: 580 },
+        { id: 'bot-detected', name: 'Known Bots', context: 'bot_detection', entity_count: 890 },
+        { id: 'human-verified', name: 'Human Verified', context: 'bot_detection', entity_count: 288 }
+      ],
+      topEntities: {
+        copy_trading: [
+          { entity_id: 'wallet:7kMpRKrJ6xQpZKqGEfDJ4K6j9xzQQrjwqJqKLqP4pZKK', score: 0.9847, decision_hint: 'allow' },
+          { entity_id: 'wallet:AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va', score: 0.9234, decision_hint: 'allow' },
+          { entity_id: 'wallet:CaY31pZ26fQYPBrWYB1FxXdiwPvqcXtK8NMu4VkY6TgF', score: 0.8912, decision_hint: 'allow' },
+          { entity_id: 'wallet:8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6', score: 0.8567, decision_hint: 'allow' },
+          { entity_id: 'wallet:25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS', score: 0.7823, decision_hint: 'review' }
+        ],
+        rugger_check: [
+          { entity_id: 'token:So11111111111111111111111111111111111111112', score: 0.9999, decision_hint: 'allow' },
+          { entity_id: 'token:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', score: 0.9987, decision_hint: 'allow' },
+          { entity_id: 'token:H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM', score: 0.9234, decision_hint: 'allow' },
+          { entity_id: 'token:6YsNNmhL2gnkji8m8Jyea4BCzUhwkwknA9tgvQ5YwS8', score: 0.8456, decision_hint: 'review' }
+        ],
+        social_verification: [
+          { entity_id: 'wallet:toly.sol', score: 0.9912, decision_hint: 'allow' },
+          { entity_id: 'wallet:raj.sol', score: 0.9845, decision_hint: 'allow' },
+          { entity_id: 'wallet:mert.sol', score: 0.9723, decision_hint: 'allow' }
+        ],
+        token_analysis: [
+          { entity_id: 'token:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', score: 0.9567, decision_hint: 'allow' },
+          { entity_id: 'token:orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', score: 0.9234, decision_hint: 'allow' },
+          { entity_id: 'token:RaydiumxnYF7YS7mU9Geh3fWDKqJvZKxYc8VMLPF2eo', score: 0.9123, decision_hint: 'allow' }
+        ],
+        bot_detection: [
+          { entity_id: 'wallet:BotHunter1111111111111111111111111111111111', score: 0.1234, decision_hint: 'deny' },
+          { entity_id: 'wallet:Sniper22222222222222222222222222222222222222', score: 0.0987, decision_hint: 'deny' }
+        ]
+      }
+    };
+    
     async function init() {
-      // Load registries
+      // Try to load from API, fall back to demo data
       try {
         const res = await fetch(`${API_BASE}/v1/registries`);
+        if (!res.ok) throw new Error('API unavailable');
         const data = await res.json();
         
         const contexts = new Set(data.registries.map(r => r.context));
         document.getElementById('registryCount').textContent = data.registries.length;
         document.getElementById('contextCount').textContent = contexts.size;
-        
-        // Count entities
-        const entityRes = await fetch(`${API_BASE}/v1/health`);
-        const health = await entityRes.json();
         
         document.getElementById('registriesList').innerHTML = data.registries.map(r => `
           <div class="registry-item">
@@ -467,20 +509,26 @@
           </div>
         `).join('');
         
-        // Set sample address
-        document.getElementById('entityAddress').placeholder = SAMPLE_ADDRESSES.wallet[0];
-        
       } catch (err) {
-        console.error('Failed to load registries:', err);
+        // Use demo data
+        DEMO_MODE = true;
+        console.log('Using demo mode (no backend connected)');
+        
+        const contexts = new Set(DEMO_DATA.registries.map(r => r.context));
+        document.getElementById('registryCount').textContent = DEMO_DATA.registries.length;
+        document.getElementById('contextCount').textContent = contexts.size;
+        document.getElementById('entityCount').textContent = '8,568';
+        
+        document.getElementById('registriesList').innerHTML = DEMO_DATA.registries.map(r => `
+          <div class="registry-item">
+            <span>${r.name}</span>
+            <span class="registry-context">${r.context}</span>
+          </div>
+        `).join('');
       }
       
-      // Load entity count from health
-      try {
-        const health = await fetch(`${API_BASE}/v1/health`).then(r => r.json());
-        document.getElementById('entityCount').textContent = '8500+';
-      } catch (err) {
-        document.getElementById('entityCount').textContent = '8500+';
-      }
+      // Set sample address placeholder
+      document.getElementById('entityAddress').placeholder = SAMPLE_ADDRESSES.wallet[0];
       
       // Load top entities
       loadTopEntities();
@@ -494,45 +542,66 @@
       const resultDiv = document.getElementById('trustResult');
       resultDiv.innerHTML = '<p style="color: var(--muted);">Querying...</p>';
       
-      try {
-        const res = await fetch(`${API_BASE}/v1/trust/query`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Payment-Proof': PAYMENT_PROOF
-          },
-          body: JSON.stringify({
-            entity: { type, identifier: address },
-            context
-          })
-        });
-        
-        const data = await res.json();
-        
-        if (data.error) {
-          resultDiv.innerHTML = `<pre style="color: var(--red);">${JSON.stringify(data, null, 2)}</pre>`;
+      let data;
+      
+      if (DEMO_MODE) {
+        // Generate demo response
+        await new Promise(r => setTimeout(r, 500)); // Simulate API delay
+        const score = 0.5 + Math.random() * 0.4; // Random score 0.5-0.9
+        const hint = score > 0.8 ? 'allow' : score > 0.5 ? 'review' : 'deny';
+        data = {
+          entity_id: `${type}:${address}`,
+          context,
+          score,
+          decision_hint: hint,
+          provenance: [
+            { registry: 'demo-registry', weight: 1.0, computed_at: new Date().toISOString() }
+          ],
+          demo: true
+        };
+      } else {
+        try {
+          const res = await fetch(`${API_BASE}/v1/trust/query`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Payment-Proof': PAYMENT_PROOF
+            },
+            body: JSON.stringify({
+              entity: { type, identifier: address },
+              context
+            })
+          });
+          
+          data = await res.json();
+          
+          if (data.error) {
+            resultDiv.innerHTML = `<pre style="color: var(--red);">${JSON.stringify(data, null, 2)}</pre>`;
+            return;
+          }
+        } catch (err) {
+          resultDiv.innerHTML = `<pre style="color: var(--red);">Error: ${err.message}</pre>`;
           return;
         }
-        
-        const hintClass = `hint-${data.decision_hint}`;
-        resultDiv.innerHTML = `
-          <div class="trust-result">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <div class="trust-score">${data.score.toFixed(4)}</div>
-                <div style="color: var(--muted); font-size: 0.85rem;">Trust Score</div>
-              </div>
-              <span class="hint ${hintClass}">${data.decision_hint}</span>
-            </div>
-            <div class="provenance">
-              <strong>Provenance:</strong><br>
-              ${data.provenance.map(p => `• ${p.registry} (${new Date(p.computed_at).toLocaleDateString()})`).join('<br>')}
-            </div>
-          </div>
-        `;
-      } catch (err) {
-        resultDiv.innerHTML = `<pre style="color: var(--red);">Error: ${err.message}</pre>`;
       }
+      
+      const hintClass = `hint-${data.decision_hint}`;
+      resultDiv.innerHTML = `
+        <div class="trust-result">
+          ${data.demo ? '<div style="background: var(--accent); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; margin-bottom: 1rem;">DEMO MODE - No backend connected</div>' : ''}
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div class="trust-score">${data.score.toFixed(4)}</div>
+              <div style="color: var(--muted); font-size: 0.85rem;">Trust Score</div>
+            </div>
+            <span class="hint ${hintClass}">${data.decision_hint}</span>
+          </div>
+          <div class="provenance">
+            <strong>Provenance:</strong><br>
+            ${data.provenance.map(p => `• ${p.registry} (${new Date(p.computed_at).toLocaleDateString()})`).join('<br>')}
+          </div>
+        </div>
+      `;
     }
     
     async function loadTopEntities() {
@@ -540,32 +609,43 @@
       const container = document.getElementById('topEntities');
       container.innerHTML = '<p style="color: var(--muted);">Loading...</p>';
       
-      try {
-        const res = await fetch(`${API_BASE}/v1/trust/top?context=${context}&limit=10`, {
-          headers: { 'X-Payment-Proof': PAYMENT_PROOF }
-        });
-        const data = await res.json();
-        
-        if (!data.entities || data.entities.length === 0) {
-          container.innerHTML = '<p style="color: var(--muted);">No entities found for this context</p>';
-          return;
+      let entities = [];
+      
+      if (DEMO_MODE) {
+        // Use demo data
+        await new Promise(r => setTimeout(r, 300)); // Simulate loading
+        entities = DEMO_DATA.topEntities[context] || [];
+      } else {
+        try {
+          const res = await fetch(`${API_BASE}/v1/trust/top?context=${context}&limit=10`, {
+            headers: { 'X-Payment-Proof': PAYMENT_PROOF }
+          });
+          if (!res.ok) throw new Error('API unavailable');
+          const data = await res.json();
+          entities = data.entities || [];
+        } catch (err) {
+          // Fall back to demo data
+          entities = DEMO_DATA.topEntities[context] || [];
         }
-        
-        container.innerHTML = data.entities.map((e, i) => `
-          <div class="entity-item">
-            <div>
-              <span style="color: var(--muted);">#${i + 1}</span>
-              <span class="entity-address" title="${e.entity_id}">${e.entity_id.split(':')[1].slice(0, 20)}...</span>
-            </div>
-            <div>
-              <span class="entity-score">${e.score.toFixed(4)}</span>
-              <span class="hint hint-${e.decision_hint}" style="margin-left: 0.5rem; font-size: 0.7rem;">${e.decision_hint}</span>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        container.innerHTML = `<p style="color: var(--red);">Error: ${err.message}</p>`;
       }
+      
+      if (entities.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted);">No entities found for this context</p>';
+        return;
+      }
+      
+      container.innerHTML = entities.map((e, i) => `
+        <div class="entity-item">
+          <div>
+            <span style="color: var(--muted);">#${i + 1}</span>
+            <span class="entity-address" title="${e.entity_id}">${e.entity_id.split(':')[1].slice(0, 20)}...</span>
+          </div>
+          <div>
+            <span class="entity-score">${e.score.toFixed(4)}</span>
+            <span class="hint hint-${e.decision_hint}" style="margin-left: 0.5rem; font-size: 0.7rem;">${e.decision_hint}</span>
+          </div>
+        </div>
+      `).join('');
     }
     
     async function demoPaymentFlow() {
