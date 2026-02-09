@@ -524,10 +524,7 @@
         
         document.getElementById('registriesList').innerHTML = data.registries.map(r => `
           <div class="registry-item" title="${r.description || ''}">
-            <div>
-              <span>${r.name}</span>
-              <span style="color: var(--muted); font-size: 0.75rem; margin-left: 0.5rem;">${(r.entry_count || 0).toLocaleString()} entities</span>
-            </div>
+            <span>${r.name}</span>
             <span class="registry-context">${r.context}</span>
           </div>
         `).join('');
@@ -545,10 +542,7 @@
         
         document.getElementById('registriesList').innerHTML = DEMO_DATA.registries.map(r => `
           <div class="registry-item" title="${r.description || ''}">
-            <div>
-              <span>${r.name}</span>
-              <span style="color: var(--muted); font-size: 0.75rem; margin-left: 0.5rem;">${(r.entry_count || 0).toLocaleString()} entities</span>
-            </div>
+            <span>${r.name}</span>
             <span class="registry-context">${r.context}</span>
           </div>
         `).join('');
@@ -690,7 +684,10 @@
         return;
       }
       
-      container.innerHTML = entities.map((e, i) => `
+      container.innerHTML = entities.map((e, i) => {
+        // Don't show decision hint for 0 scores (e.g., bot traders are just flagged, not scored)
+        const showHint = e.score > 0 && e.decision_hint;
+        return `
         <div class="entity-item">
           <div>
             <span style="color: var(--muted);">#${i + 1}</span>
@@ -698,10 +695,10 @@
           </div>
           <div>
             <span class="entity-score">${e.score.toFixed(4)}</span>
-            <span class="hint hint-${e.decision_hint}" style="margin-left: 0.5rem; font-size: 0.7rem;">${e.decision_hint}</span>
+            ${showHint ? `<span class="hint hint-${e.decision_hint}" style="margin-left: 0.5rem; font-size: 0.7rem;">${e.decision_hint}</span>` : ''}
           </div>
         </div>
-      `).join('');
+      `}).join('');
     }
     
     async function demoPaymentFlow() {
