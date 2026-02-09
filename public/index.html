@@ -184,10 +184,13 @@
     .registry-item {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 0.75rem;
       background: var(--bg);
       border-radius: 8px;
       font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      cursor: help;
     }
     
     .registry-context {
@@ -333,11 +336,39 @@
     </header>
     
     <div class="grid">
-      <!-- Trust Query -->
+      <!-- Registries (moved up) -->
       <div class="card">
-        <h2>🔍 Trust Query</h2>
+        <h2>📋 Trust Registries</h2>
         <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
-          Query trust score for any Solana wallet or token
+          Curated lists of Solana wallets and tokens with pre-computed trust scores. Each registry focuses on a specific use case — from identifying top traders to flagging known ruggers.
+        </p>
+        <div class="registries-list" id="registriesList">
+          <p style="color: var(--muted);">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Top Entities (moved up) -->
+      <div class="card">
+        <h2>🏆 Top Ranked Entities</h2>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Browse the highest-scored entities from each registry. Use <code style="background: var(--bg); padding: 2px 6px; border-radius: 4px;">GET /v1/trust/top?registry=slug</code> to fetch programmatically.
+        </p>
+        <div class="form-group">
+          <label>Select Registry</label>
+          <select id="topRegistry" onchange="loadTopEntities()">
+            <!-- Populated dynamically from DEMO_DATA.registries -->
+          </select>
+        </div>
+        <div class="top-entities" id="topEntities">
+          <p style="color: var(--muted);">Loading...</p>
+        </div>
+      </div>
+      
+      <!-- Trust Query (moved down) -->
+      <div class="card">
+        <h2>🔍 Entity Lookup</h2>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+          Check trust score for any wallet or token. Returns aggregated score across all registries in the selected context, with provenance showing which registries contributed.
         </p>
         <div class="form-group">
           <label>Entity Type</label>
@@ -347,7 +378,7 @@
           </select>
         </div>
         <div class="form-group">
-          <label>Address / Identifier</label>
+          <label>Address</label>
           <input type="text" id="entityAddress" placeholder="Enter Solana address...">
         </div>
         <div class="form-group">
@@ -360,63 +391,37 @@
             <option value="token_analysis">Token Analysis</option>
           </select>
         </div>
-        <button onclick="queryTrust()">Query Trust</button>
+        <button onclick="queryTrust()">Query Trust Score</button>
         <div class="result" id="trustResult">
-          <p style="color: var(--muted);">Results will appear here...</p>
+          <p style="color: var(--muted);">Enter an address and click Query to see results...</p>
         </div>
       </div>
       
-      <!-- x402 Payment Demo -->
+      <!-- x402 Payment Demo (moved down) -->
       <div class="card payment-demo">
-        <h2>💰 x402 Payment Flow</h2>
+        <h2>💰 x402 Payment Protocol</h2>
         <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
-          See how agents pay for trust data
+          ACR uses the x402 protocol for micropayments. Agents pay per query with USDC on Solana — no API keys, no subscriptions.
         </p>
         <div class="payment-flow">
           <div class="payment-step" id="step1">
-            <div class="step-title">1. Request without payment</div>
+            <div class="step-title">1. Agent requests trust data</div>
             <div class="step-code">POST /v1/trust/query</div>
           </div>
           <div class="payment-step" id="step2">
-            <div class="step-title">2. Receive 402 Payment Required <span class="status-badge status-402">402</span></div>
-            <div class="step-code">{"error": "payment_required", "price_usd": 0.02}</div>
+            <div class="step-title">2. Server returns payment request <span class="status-badge status-402">402</span></div>
+            <div class="step-code">{"price_usd": "0.02", "payTo": "..."}</div>
           </div>
           <div class="payment-step" id="step3">
-            <div class="step-title">3. Execute payment via facilitator</div>
-            <div class="step-code">PayAI / USDC on Solana</div>
+            <div class="step-title">3. Agent pays via facilitator</div>
+            <div class="step-code">USDC transfer on Solana devnet</div>
           </div>
           <div class="payment-step" id="step4">
-            <div class="step-title">4. Retry with proof <span class="status-badge status-200">200</span></div>
-            <div class="step-code">X-Payment-Proof: [proof]</div>
+            <div class="step-title">4. Retry with payment proof <span class="status-badge status-200">200</span></div>
+            <div class="step-code">X-PAYMENT: [signed proof]</div>
           </div>
         </div>
-        <button onclick="demoPaymentFlow()" style="margin-top: 1rem;">▶ Run Demo</button>
-      </div>
-      
-      <!-- Registries -->
-      <div class="card">
-        <h2>📋 Available Registries</h2>
-        <div class="registries-list" id="registriesList">
-          <p style="color: var(--muted);">Loading...</p>
-        </div>
-      </div>
-      
-      <!-- Top Entities -->
-      <div class="card">
-        <h2>🏆 Top Entities</h2>
-        <div class="form-group">
-          <label>Context</label>
-          <select id="topContext" onchange="loadTopEntities()">
-            <option value="copy_trading">Copy Trading</option>
-            <option value="social_verification">Social Verification</option>
-            <option value="token_analysis">Token Analysis</option>
-            <option value="rugger_check">Rugger Check</option>
-            <option value="bot_detection">Bot Detection</option>
-          </select>
-        </div>
-        <div class="top-entities" id="topEntities">
-          <p style="color: var(--muted);">Loading...</p>
-        </div>
+        <button onclick="demoPaymentFlow()" style="margin-top: 1rem;">▶ Animate Flow</button>
       </div>
     </div>
     
@@ -518,8 +523,11 @@
         document.getElementById('entityCount').textContent = totalEntities.toLocaleString();
         
         document.getElementById('registriesList').innerHTML = data.registries.map(r => `
-          <div class="registry-item">
-            <span>${r.name}</span>
+          <div class="registry-item" title="${r.description || ''}">
+            <div>
+              <span>${r.name}</span>
+              <span style="color: var(--muted); font-size: 0.75rem; margin-left: 0.5rem;">${(r.entry_count || 0).toLocaleString()} entities</span>
+            </div>
             <span class="registry-context">${r.context}</span>
           </div>
         `).join('');
@@ -536,8 +544,11 @@
         document.getElementById('entityCount').textContent = totalEntities.toLocaleString();
         
         document.getElementById('registriesList').innerHTML = DEMO_DATA.registries.map(r => `
-          <div class="registry-item">
-            <span>${r.name}</span>
+          <div class="registry-item" title="${r.description || ''}">
+            <div>
+              <span>${r.name}</span>
+              <span style="color: var(--muted); font-size: 0.75rem; margin-left: 0.5rem;">${(r.entry_count || 0).toLocaleString()} entities</span>
+            </div>
             <span class="registry-context">${r.context}</span>
           </div>
         `).join('');
@@ -546,7 +557,13 @@
       // Set sample address placeholder
       document.getElementById('entityAddress').placeholder = SAMPLE_ADDRESSES.wallet[0];
       
-      // Load top entities
+      // Populate registry dropdown
+      const registries = DEMO_MODE ? DEMO_DATA.registries : (window._registries || DEMO_DATA.registries);
+      document.getElementById('topRegistry').innerHTML = registries.map(r => `
+        <option value="${r.slug}">${r.name} (${r.entry_count.toLocaleString()} entities)</option>
+      `).join('');
+      
+      // Load top entities for first registry
       loadTopEntities();
     }
     
@@ -640,19 +657,23 @@
     }
     
     async function loadTopEntities() {
-      const context = document.getElementById('topContext').value;
+      const registrySlug = document.getElementById('topRegistry').value;
       const container = document.getElementById('topEntities');
       container.innerHTML = '<p style="color: var(--muted);">Loading...</p>';
+      
+      // Find the registry to get its context
+      const registry = DEMO_DATA.registries.find(r => r.slug === registrySlug);
+      const context = registry ? registry.context : 'copy_trading';
       
       let entities = [];
       
       if (DEMO_MODE) {
-        // Use demo data
+        // Use demo data - get entities for this context
         await new Promise(r => setTimeout(r, 300)); // Simulate loading
         entities = DEMO_DATA.topEntities[context] || [];
       } else {
         try {
-          const res = await fetch(`${API_BASE}/v1/trust/top?context=${context}&limit=10`, {
+          const res = await fetch(`${API_BASE}/v1/trust/top?registry=${registrySlug}&limit=10`, {
             headers: { 'X-Payment-Proof': PAYMENT_PROOF }
           });
           if (!res.ok) throw new Error('API unavailable');
@@ -665,7 +686,7 @@
       }
       
       if (entities.length === 0) {
-        container.innerHTML = '<p style="color: var(--muted);">No entities found for this context</p>';
+        container.innerHTML = '<p style="color: var(--muted);">No entities found in this registry</p>';
         return;
       }
       
