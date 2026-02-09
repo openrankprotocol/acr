@@ -77,9 +77,9 @@ async function ingestRegistry(config: RegistryConfig): Promise<{ inserted: numbe
       const identifier = row[config.identifierColumn]?.trim();
       if (!identifier) continue;
 
-      // Get score (handle column name variations)
-      const scoreStr = row[config.scoreColumn]?.trim() || '0';
-      const score = parseFloat(scoreStr) || 0;
+      // Get score (handle column name variations, use defaultScore if not present)
+      const scoreStr = row[config.scoreColumn]?.trim();
+      const score = scoreStr ? (parseFloat(scoreStr) || config.defaultScore || 0) : (config.defaultScore || 0);
 
       // Get display name if available
       const displayName = row.display_name?.trim() || null;

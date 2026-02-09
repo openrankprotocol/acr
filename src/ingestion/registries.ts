@@ -9,8 +9,9 @@ export interface RegistryConfig {
   sourceFile: string;
   entityType: string;
   // CSV column mappings (handle variations)
-  identifierColumn: string; // 'identifier' or 'address'
+  identifierColumn: string; // 'identifier' or 'address' or 'identifiers'
   scoreColumn: string;      // 'score' or 'scores'
+  defaultScore?: number;    // Default score when CSV has no score values
 }
 
 export const registryConfigs: RegistryConfig[] = [
@@ -103,6 +104,27 @@ export const registryConfigs: RegistryConfig[] = [
     entityType: 'token',
     identifierColumn: 'identifier',
     scoreColumn: 'score',
+  },
+  {
+    slug: 'top_solana_devs',
+    name: 'Top Solana Developers',
+    description: 'Top developers contributing to Solana ecosystem projects on GitHub',
+    context: 'developer_reputation',
+    sourceFile: 'Top_Solana_Devs.csv',
+    entityType: 'github',
+    identifierColumn: 'identifiers',
+    scoreColumn: 'score',
+  },
+  {
+    slug: 'metadao_investors',
+    name: 'MetaDAO Investors',
+    description: 'Wallets that have participated in MetaDAO governance and investments',
+    context: 'wallet_reputation',
+    sourceFile: 'Top_Metadao_Investors.csv',
+    entityType: 'wallet',
+    identifierColumn: 'identifier',
+    scoreColumn: 'score',
+    defaultScore: 1.0, // No scores in file - presence in registry = signal
   },
 ];
 

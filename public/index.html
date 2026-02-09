@@ -375,6 +375,7 @@
           <select id="entityType">
             <option value="wallet">Wallet</option>
             <option value="token">Token</option>
+            <option value="github">GitHub Username</option>
           </select>
         </div>
         <div class="form-group">
@@ -389,6 +390,8 @@
             <option value="social_verification">Social Verification</option>
             <option value="bot_detection">Bot Detection</option>
             <option value="token_analysis">Token Analysis</option>
+            <option value="developer_reputation">Developer Reputation</option>
+            <option value="wallet_reputation">Wallet Reputation</option>
           </select>
         </div>
         <button onclick="queryTrust()">Query Trust Score</button>
@@ -447,12 +450,18 @@
         '25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS',  // Top DEX trader
         'AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va',  // Top DEX trader
         '8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6',  // Farcaster user
-        '9gGHgEnNC4uBYmST2xZuP1agdS26Vq2tBoqzNmdumuw9'   // Dev rugger
+        '9gGHgEnNC4uBYmST2xZuP1agdS26Vq2tBoqzNmdumuw9',  // Dev rugger
+        'Cpxb52xGF7j4HCXY2EMUonNrY51oGfqFD2zP8UFGo1gf'   // MetaDAO investor
       ],
       token: [
         'So11111111111111111111111111111111111111112',    // Wrapped SOL
         'H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM',  // Top token
         'BnkqRixpqXRsxk3guzUJYxKhDPEDCgTB3SSsQtrVTATt'   // Top token
+      ],
+      github: [
+        'steveluscher',   // Top Solana dev
+        'lorisleiva',     // Top Solana dev
+        'joncinque'       // Top Solana dev
       ]
     };
     
@@ -467,7 +476,9 @@
         { slug: 'farcaster_users', name: 'Solana x Farcaster Users', description: 'Solana wallets linked to Farcaster social identities', context: 'social_verification', entry_count: 1580 },
         { slug: 'top_kols', name: 'Solana KOLs', description: 'Key Opinion Leaders in the Solana ecosystem with verified wallets', context: 'social_verification', entry_count: 122 },
         { slug: 'top_tokens', name: 'Top Solana Tokens (Bankr)', description: 'Top tokens by market cap tracked by Bankr', context: 'token_analysis', entry_count: 252 },
-        { slug: 'trending_tokens', name: 'Top Traded Tokens (24h)', description: 'Most traded tokens in the last 24 hours', context: 'token_analysis', entry_count: 10 }
+        { slug: 'trending_tokens', name: 'Top Traded Tokens (24h)', description: 'Most traded tokens in the last 24 hours', context: 'token_analysis', entry_count: 10 },
+        { slug: 'top_solana_devs', name: 'Top Solana Developers', description: 'Top developers contributing to Solana ecosystem projects on GitHub', context: 'developer_reputation', entry_count: 685 },
+        { slug: 'metadao_investors', name: 'MetaDAO Investors', description: 'Wallets that have participated in MetaDAO governance and investments', context: 'wallet_reputation', entry_count: 5113 }
       ],
       topEntities: {
         copy_trading: [
@@ -504,6 +515,20 @@
           { entity_id: 'wallet:5tH7ctth84p2HdzW7vzBxEfqu5yGxtUSKmF7zsN5CJCB', score: 0.0, decision_hint: 'deny' },
           { entity_id: 'wallet:HuTshmtwcQkWBLzgW3m4uwcmik7Lmz4YFpYcTqMJpXiP', score: 0.0, decision_hint: 'deny' },
           { entity_id: 'wallet:AhQC5LY8shnS6QmSsBQrUYcPYMv7RJgQT28jToJMczxN', score: 0.0, decision_hint: 'deny' }
+        ],
+        developer_reputation: [
+          { entity_id: 'github:kelvinlau20100', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'github:steveluscher', score: 0.9518, decision_hint: 'allow' },
+          { entity_id: 'github:lorisleiva', score: 0.9508, decision_hint: 'allow' },
+          { entity_id: 'github:rafinskipg', score: 0.9403, decision_hint: 'allow' },
+          { entity_id: 'github:joncinque', score: 0.9394, decision_hint: 'allow' }
+        ],
+        wallet_reputation: [
+          { entity_id: 'wallet:Cpxb52xGF7j4HCXY2EMUonNrY51oGfqFD2zP8UFGo1gf', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'wallet:FhXTty1zP72YkrxH2DzK5ivNcTndDKR9pZC7z4Le2gWJ', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'wallet:6t73xT4hcPxxvfM9dJyvW1dDUPNhjhJPsMwunNWhXBmh', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'wallet:6NDjnFNfddQs91JPxnoDbfSuKms7WVM11sTwXZHbwemj', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'wallet:6Hnz2xrNfEBkt34SC6ZmuaQewN9ZBpyDXMJu5xKBpZe5', score: 1.0, decision_hint: 'allow' }
         ]
       }
     };
