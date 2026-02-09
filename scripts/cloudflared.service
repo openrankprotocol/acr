@@ -1,0 +1,16 @@
+[Unit]
+Description=Cloudflare Tunnel for ACR API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/projects/acr
+ExecStart=/usr/local/bin/cloudflared tunnel --url http://localhost:3000
+Restart=always
+RestartSec=5
+StandardOutput=append:/tmp/cf_tunnel.log
+StandardError=append:/tmp/cf_tunnel.log
+
+[Install]
+WantedBy=multi-user.target

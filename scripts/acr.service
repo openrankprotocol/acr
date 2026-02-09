@@ -1,0 +1,29 @@
+[Unit]
+Description=ACR - Agent Curated Registry API
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/projects/acr
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+EnvironmentFile=/home/ubuntu/projects/acr/.env
+
+# Logging
+StandardOutput=append:/var/log/acr/acr.log
+StandardError=append:/var/log/acr/acr-error.log
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/projects/acr
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
