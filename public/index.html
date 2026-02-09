@@ -410,6 +410,8 @@
             <option value="copy_trading">Copy Trading</option>
             <option value="social_verification">Social Verification</option>
             <option value="token_analysis">Token Analysis</option>
+            <option value="rugger_check">Rugger Check</option>
+            <option value="bot_detection">Bot Detection</option>
           </select>
         </div>
         <div class="top-entities" id="topEntities">
@@ -434,59 +436,69 @@
     const PAYMENT_PROOF = 'demo-payment-proof';
     let DEMO_MODE = false;
     
-    // Sample addresses for demo
+    // Sample addresses from actual ACR database
     const SAMPLE_ADDRESSES = {
       wallet: [
-        '25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS',
-        'AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va',
-        '8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6'
+        '25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS',  // Top DEX trader
+        'AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va',  // Top DEX trader
+        '8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6',  // Farcaster user
+        '9gGHgEnNC4uBYmST2xZuP1agdS26Vq2tBoqzNmdumuw9'   // Dev rugger
       ],
       token: [
-        'H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM',
-        '6YsNNmhL2gnkji8m8Jyea4BCzUhwkwknA9tgvQ5YwS8'
+        'So11111111111111111111111111111111111111112',    // Wrapped SOL
+        'H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM',  // Top token
+        'BnkqRixpqXRsxk3guzUJYxKhDPEDCgTB3SSsQtrVTATt'   // Top token
       ]
     };
     
-    // Demo data for static deployment
+    // Demo data for static deployment - mirrors actual ACR backend data
     const DEMO_DATA = {
       registries: [
-        { id: 'copytrade-leaders', name: 'CopyTrade Leaders', context: 'copy_trading', entity_count: 1250 },
-        { id: 'copytrade-followers', name: 'CopyTrade Followers', context: 'copy_trading', entity_count: 890 },
-        { id: 'rugcheck-safe', name: 'RugCheck Safe Tokens', context: 'rugger_check', entity_count: 2100 },
-        { id: 'rugcheck-risky', name: 'RugCheck Risky', context: 'rugger_check', entity_count: 450 },
-        { id: 'twitter-verified', name: 'Twitter Verified', context: 'social_verification', entity_count: 1800 },
-        { id: 'dexscreener-trending', name: 'DexScreener Trending', context: 'token_analysis', entity_count: 320 },
-        { id: 'birdeye-top', name: 'Birdeye Top Tokens', context: 'token_analysis', entity_count: 580 },
-        { id: 'bot-detected', name: 'Known Bots', context: 'bot_detection', entity_count: 890 },
-        { id: 'human-verified', name: 'Human Verified', context: 'bot_detection', entity_count: 288 }
+        { slug: 'top_dex_traders', name: 'Top Solana DEX Traders', description: 'Top traders by DEX trading volume and profitability on Solana', context: 'copy_trading', entry_count: 1242 },
+        { slug: 'top_pumpfun_traders', name: 'Top Pump.fun Traders', description: 'Top traders on Pump.fun memecoin platform', context: 'copy_trading', entry_count: 2473 },
+        { slug: 'top_whales', name: 'Solana Whales', description: 'Large holders and significant wallet addresses on Solana', context: 'copy_trading', entry_count: 2464 },
+        { slug: 'bot_traders', name: 'Solana Bot Traders', description: 'Known bot trading wallets - useful for filtering or analyzing bot activity', context: 'bot_detection', entry_count: 100 },
+        { slug: 'dev_ruggers', name: 'Top Dev Ruggers', description: 'Developer wallets associated with rug pulls and suspicious token launches', context: 'rugger_check', entry_count: 325 },
+        { slug: 'farcaster_users', name: 'Solana x Farcaster Users', description: 'Solana wallets linked to Farcaster social identities', context: 'social_verification', entry_count: 1580 },
+        { slug: 'top_kols', name: 'Solana KOLs', description: 'Key Opinion Leaders in the Solana ecosystem with verified wallets', context: 'social_verification', entry_count: 122 },
+        { slug: 'top_tokens', name: 'Top Solana Tokens (Bankr)', description: 'Top tokens by market cap tracked by Bankr', context: 'token_analysis', entry_count: 252 },
+        { slug: 'trending_tokens', name: 'Top Traded Tokens (24h)', description: 'Most traded tokens in the last 24 hours', context: 'token_analysis', entry_count: 10 }
       ],
       topEntities: {
         copy_trading: [
-          { entity_id: 'wallet:7kMpRKrJ6xQpZKqGEfDJ4K6j9xzQQrjwqJqKLqP4pZKK', score: 0.9847, decision_hint: 'allow' },
-          { entity_id: 'wallet:AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va', score: 0.9234, decision_hint: 'allow' },
-          { entity_id: 'wallet:CaY31pZ26fQYPBrWYB1FxXdiwPvqcXtK8NMu4VkY6TgF', score: 0.8912, decision_hint: 'allow' },
-          { entity_id: 'wallet:8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6', score: 0.8567, decision_hint: 'allow' },
-          { entity_id: 'wallet:25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS', score: 0.7823, decision_hint: 'review' }
+          { entity_id: 'wallet:25YYDyKNX6inGvSs6Kxg6ZfvrjxhTPXYKeebvjti4jqS', score: 0.1132, decision_hint: 'review' },
+          { entity_id: 'wallet:5vRcsB8LbtPk4uRRqkfMR5cMwz5B6bZax9Zhh8G717AA', score: 0.1028, decision_hint: 'review' },
+          { entity_id: 'wallet:AgLyDZd7JRRVj9cYJw5SQccs9JsQsFETkLkDUChy55va', score: 0.0784, decision_hint: 'review' },
+          { entity_id: 'wallet:Ape3ZcbwowPHxt4fLE8BhXV5LqVDSHWM9Sz9fHobMb9k', score: 0.0778, decision_hint: 'review' },
+          { entity_id: 'wallet:2nnjtfQ8nhEJKbKmM58ScGUTPcUMLd43M8tg1xcPdis6', score: 0.0716, decision_hint: 'review' }
         ],
         rugger_check: [
-          { entity_id: 'token:So11111111111111111111111111111111111111112', score: 0.9999, decision_hint: 'allow' },
-          { entity_id: 'token:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v', score: 0.9987, decision_hint: 'allow' },
-          { entity_id: 'token:H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM', score: 0.9234, decision_hint: 'allow' },
-          { entity_id: 'token:6YsNNmhL2gnkji8m8Jyea4BCzUhwkwknA9tgvQ5YwS8', score: 0.8456, decision_hint: 'review' }
+          { entity_id: 'wallet:9gGHgEnNC4uBYmST2xZuP1agdS26Vq2tBoqzNmdumuw9', score: 0.04, decision_hint: 'deny' },
+          { entity_id: 'wallet:FQapA88Kh7h6HGSb3UxFgEeKViTcXNwyAvCLX7BuFPRf', score: 0.04, decision_hint: 'deny' },
+          { entity_id: 'wallet:Dp4JYka5crNMhUztbWwgvvzLLoK8gLSRewdTQWHRwKiU', score: 0.04, decision_hint: 'deny' },
+          { entity_id: 'wallet:F9xZFb8FYMjxBiYngwPMLgFcCkjAcFSSwcm7QZU5nWVh', score: 0.04, decision_hint: 'deny' },
+          { entity_id: 'wallet:BtMFPtAg34BN4oBfqTo3TysKQDjqdoG3ZQSBcoLisPqS', score: 0.04, decision_hint: 'deny' }
         ],
         social_verification: [
-          { entity_id: 'wallet:toly.sol', score: 0.9912, decision_hint: 'allow' },
-          { entity_id: 'wallet:raj.sol', score: 0.9845, decision_hint: 'allow' },
-          { entity_id: 'wallet:mert.sol', score: 0.9723, decision_hint: 'allow' }
+          { entity_id: 'wallet:8deJ9xeUvXSJwicYptA9mHsU2rN2pDx37KWzkDkEXhU6', score: 0.0082, decision_hint: 'review' },
+          { entity_id: 'wallet:8zFZHuSRuDpuAR7J6FzwyF3vKNx4CVW3DFHJerQhc7Zd', score: 0.0082, decision_hint: 'review' },
+          { entity_id: 'wallet:7VBTpiiEjkwRbRGHJFUz6o5fWuhPFtAmy8JGhNqwHNnn', score: 0.0082, decision_hint: 'review' },
+          { entity_id: 'wallet:HmBmSYwYEgEZuBUYuDs9xofyqBAkw4ywugB1d7R7sTGh', score: 0.0082, decision_hint: 'review' },
+          { entity_id: 'wallet:mW4PZB45isHmnjGkLpJvjKBzVS5NXzTJ8UDyug4gTsM', score: 0.0082, decision_hint: 'review' }
         ],
         token_analysis: [
-          { entity_id: 'token:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN', score: 0.9567, decision_hint: 'allow' },
-          { entity_id: 'token:orcaEKTdK7LKz57vaAYr9QeNsVEPfiu6QeMU1kektZE', score: 0.9234, decision_hint: 'allow' },
-          { entity_id: 'token:RaydiumxnYF7YS7mU9Geh3fWDKqJvZKxYc8VMLPF2eo', score: 0.9123, decision_hint: 'allow' }
+          { entity_id: 'token:So11111111111111111111111111111111111111112', score: 1.0, decision_hint: 'allow' },
+          { entity_id: 'token:BnkqRixpqXRsxk3guzUJYxKhDPEDCgTB3SSsQtrVTATt', score: 0.995, decision_hint: 'allow' },
+          { entity_id: 'token:7fzYoyAnM9o2q68GRtuTXvcTWn557EW1NGWwNKddrWN8', score: 0.5881, decision_hint: 'review' },
+          { entity_id: 'token:H6sycszWM6dLCU8rGuibVv4JcR7AkHtANXoLCQJ8FheM', score: 0.5781, decision_hint: 'review' },
+          { entity_id: 'token:769TUnwqk8SHf7KEGhfkAAUUENNWan6uf2xko44ZQmZQ', score: 0.517, decision_hint: 'review' }
         ],
         bot_detection: [
-          { entity_id: 'wallet:BotHunter1111111111111111111111111111111111', score: 0.1234, decision_hint: 'deny' },
-          { entity_id: 'wallet:Sniper22222222222222222222222222222222222222', score: 0.0987, decision_hint: 'deny' }
+          { entity_id: 'wallet:ARu4n5mFdZogZAravu7CcizaojWnS6oqka37gdLT5SZn', score: 0.0, decision_hint: 'deny' },
+          { entity_id: 'wallet:HV1KXxWFaSeriyFvXyx48FqG9BoFbfinB8njCJonqP7K', score: 0.0, decision_hint: 'deny' },
+          { entity_id: 'wallet:5tH7ctth84p2HdzW7vzBxEfqu5yGxtUSKmF7zsN5CJCB', score: 0.0, decision_hint: 'deny' },
+          { entity_id: 'wallet:HuTshmtwcQkWBLzgW3m4uwcmik7Lmz4YFpYcTqMJpXiP', score: 0.0, decision_hint: 'deny' },
+          { entity_id: 'wallet:AhQC5LY8shnS6QmSsBQrUYcPYMv7RJgQT28jToJMczxN', score: 0.0, decision_hint: 'deny' }
         ]
       }
     };
@@ -518,9 +530,10 @@
         console.log('Using demo mode (no backend connected)');
         
         const contexts = new Set(DEMO_DATA.registries.map(r => r.context));
+        const totalEntities = DEMO_DATA.registries.reduce((sum, r) => sum + (r.entry_count || 0), 0);
         document.getElementById('registryCount').textContent = DEMO_DATA.registries.length;
         document.getElementById('contextCount').textContent = contexts.size;
-        document.getElementById('entityCount').textContent = '8,568';
+        document.getElementById('entityCount').textContent = totalEntities.toLocaleString();
         
         document.getElementById('registriesList').innerHTML = DEMO_DATA.registries.map(r => `
           <div class="registry-item">
@@ -548,18 +561,37 @@
       let data;
       
       if (DEMO_MODE) {
-        // Generate demo response
+        // Generate demo response using actual data when available
         await new Promise(r => setTimeout(r, 500)); // Simulate API delay
-        const score = 0.5 + Math.random() * 0.4; // Random score 0.5-0.9
-        const hint = score > 0.8 ? 'allow' : score > 0.5 ? 'review' : 'deny';
+        
+        // Check if this entity exists in our demo data
+        const contextEntities = DEMO_DATA.topEntities[context] || [];
+        const found = contextEntities.find(e => e.entity_id === `${type}:${address}`);
+        
+        // Get registry names for this context
+        const contextRegistries = DEMO_DATA.registries.filter(r => r.context === context);
+        
+        let score, hint;
+        if (found) {
+          score = found.score;
+          hint = found.decision_hint;
+        } else {
+          // Generate plausible score based on context
+          score = Math.random() * 0.3 + 0.1; // 0.1 - 0.4 for unknown entities
+          hint = 'review';
+        }
+        
         data = {
           entity_id: `${type}:${address}`,
           context,
           score,
           decision_hint: hint,
-          provenance: [
-            { registry: 'demo-registry', weight: 1.0, computed_at: new Date().toISOString() }
-          ],
+          provenance: contextRegistries.map(r => ({
+            registry: r.slug,
+            registry_name: r.name,
+            weight: 1.0 / contextRegistries.length,
+            computed_at: '2026-02-06T12:08:28.486Z'
+          })),
           demo: true
         };
       } else {
@@ -601,7 +633,7 @@
           </div>
           <div class="provenance">
             <strong>Provenance:</strong><br>
-            ${data.provenance.map(p => `• ${p.registry} (${new Date(p.computed_at).toLocaleDateString()})`).join('<br>')}
+            ${data.provenance.map(p => `• ${p.registry_name || p.registry} (${new Date(p.computed_at).toLocaleDateString()})`).join('<br>')}
           </div>
         </div>
       `;
